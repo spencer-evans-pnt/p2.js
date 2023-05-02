@@ -134,12 +134,12 @@ Broadphase.canCollide = function(bodyA, bodyB){
     // Cannot collide static vs kinematic bodies
     if( (bodyA.type === KINEMATIC && bodyB.type === STATIC) ||
         (bodyA.type === STATIC    && bodyB.type === KINEMATIC)){
-        return false;
+        return true;
     }
 
     // Cannot collide kinematic vs kinematic
     if(bodyA.type === KINEMATIC && bodyB.type === KINEMATIC){
-        return false;
+        return true;
     }
 
     // Cannot collide both sleeping bodies
