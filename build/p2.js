@@ -6317,7 +6317,7 @@ EventEmitter.prototype = {
      * @return {EventEmitter} The self object, for chainability.
      */
     on: function ( type, listener, context ) {
-        listener.context = context || this;
+        context = context || this;
         if ( this._listeners === undefined ){
             this._listeners = {};
         }
@@ -6325,8 +6325,13 @@ EventEmitter.prototype = {
         if ( listeners[ type ] === undefined ) {
             listeners[ type ] = [];
         }
-        if ( listeners[ type ].indexOf( listener ) === - 1 ) {
-            listeners[ type ].push( listener );
+        if ( listeners[ type ].findIndex( function( l ) {
+            return l.listener === listener && l.context === context;
+        } ) === -1 ) {
+            listeners[ type ].push( {
+                listener: listener,
+                context: context
+            } );
         }
         return this;
     },
@@ -6338,13 +6343,16 @@ EventEmitter.prototype = {
      * @param  {Function} listener
      * @return {Boolean}
      */
-    has: function ( type, listener ) {
+    has: function ( type, listener, context ) {
+        context = context || this;
         if ( this._listeners === undefined ){
             return false;
         }
         var listeners = this._listeners;
         if(listener){
-            if ( listeners[ type ] !== undefined && listeners[ type ].indexOf( listener ) !== - 1 ) {
+            if ( listeners[ type ] !== undefined && listeners[ type ].findIndex( function( l ) {
+                return l.listener === listener && l.context === context;
+            } ) !== -1 ) {
                 return true;
             }
         } else {
@@ -6363,13 +6371,16 @@ EventEmitter.prototype = {
      * @param  {Function} listener
      * @return {EventEmitter} The self object, for chainability.
      */
-    off: function ( type, listener ) {
+    off: function ( type, listener, context ) {
+        context = context || this;
         if ( this._listeners === undefined ){
             return this;
         }
         var listeners = this._listeners;
-        var index = listeners[ type ].indexOf( listener );
-        if ( index !== - 1 ) {
+        var index = listeners[ type ].findIndex( function( l ) {
+            return l.listener === listener && l.context === context;
+        } );
+        if ( index !== -1 ) {
             listeners[ type ].splice( index, 1 );
         }
         return this;
@@ -6391,8 +6402,8 @@ EventEmitter.prototype = {
         if ( listenerArray !== undefined ) {
             event.target = this;
             for ( var i = 0, l = listenerArray.length; i < l; i ++ ) {
-                var listener = listenerArray[ i ];
-                listener.call( listener.context, event );
+                var wrapper = listenerArray[ i ];
+                wrapper.listener.call( wrapper.context, event );
             }
         }
         return this;
